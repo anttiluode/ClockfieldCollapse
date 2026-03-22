@@ -1,0 +1,121 @@
+{
+  "derivation": {
+    "S_area": "A/(pi*xi^2) * ln(2m)",
+    "S_topo": "(3g-3) * ln(A/xi^2)",
+    "xi_grid": 3.0,
+    "phase_resolution_m": 6,
+    "xi_over_lP_prediction": 1.47
+  },
+  "experiment": [
+    {
+      "n_vortices": 2,
+      "area": 27042.783203125,
+      "genus": 2,
+      "chi": -2,
+      "n_components": 2,
+      "gamma_level": 3.317160017980667e-05,
+      "n_scars": 956.4428048310717,
+      "S_area": 2376.6710858666165,
+      "S_topo": 24.02385262990049,
+      "S_total": 2400.694938496517,
+      "area_fixed": 28165.908203125,
+      "genus_fixed": 0,
+      "chi_fixed": 2
+    },
+    {
+      "n_vortices": 3,
+      "area": 34087.44140625,
+      "genus": 9,
+      "chi": -16,
+      "n_components": 1,
+      "gamma_level": 1.0252523987415421e-07,
+      "n_scars": 1205.596621591119,
+      "S_area": 2995.795061953719,
+      "S_topo": 197.74703354146214,
+      "S_total": 3193.5420954951815,
+      "area_fixed": 35329.078125,
+      "genus_fixed": 6,
+      "chi_fixed": -10
+    },
+    {
+      "n_vortices": 4,
+      "area": 35463.4375,
+      "genus": 15,
+      "chi": -28,
+      "n_components": 1,
+      "gamma_level": 1.0323796932706702e-07,
+      "n_scars": 1254.2625282567749,
+      "S_area": 3116.7252970451696,
+      "S_topo": 347.7193833879321,
+      "S_total": 3464.444680433102,
+      "area_fixed": 36775.14453125,
+      "genus_fixed": 12,
+      "chi_fixed": -22
+    },
+    {
+      "n_vortices": 5,
+      "area": 32528.705078125,
+      "genus": 13,
+      "chi": -24,
+      "n_components": 1,
+      "gamma_level": 2.1756329522144096e-09,
+      "n_scars": 1150.4676012360069,
+      "S_area": 2858.804592677003,
+      "S_topo": 294.93553083601626,
+      "S_total": 3153.740123513019,
+      "area_fixed": 33490.6875,
+      "genus_fixed": 9,
+      "chi_fixed": -16
+    },
+    {
+      "n_vortices": 6,
+      "area": 29871.853515625,
+      "genus": 20,
+      "chi": -38,
+      "n_components": 2,
+      "gamma_level": 6.906214914902184e-07,
+      "n_scars": 1056.5006991841624,
+      "S_area": 2625.305612908397,
+      "S_topo": 462.124500927795,
+      "S_total": 3087.430113836192,
+      "area_fixed": 28055.62109375,
+      "genus_fixed": 15,
+      "chi_fixed": -28
+    },
+    {
+      "n_vortices": 7,
+      "area": 35054.703125,
+      "genus": 22,
+      "chi": -42,
+      "n_components": 1,
+      "gamma_level": 2.1852869153042958e-09,
+      "n_scars": 1239.8065068805913,
+      "S_area": 3080.8034333980136,
+      "S_topo": 520.8487508343609,
+      "S_total": 3601.6521842323746,
+      "area_fixed": 28339.28515625,
+      "genus_fixed": 8,
+      "chi_fixed": -14
+    },
+    {
+      "n_vortices": 8,
+      "area": 35692.59765625,
+      "genus": 24,
+      "chi": -46,
+      "n_components": 1,
+      "gamma_level": 1.0162089117660153e-07,
+      "n_scars": 1262.3674108405303,
+      "S_area": 3136.8651736732945,
+      "S_topo": 571.6977074053506,
+      "S_total": 3708.562881078645,
+      "area_fixed": 27958.064453125,
+      "genus_fixed": 7,
+      "chi_fixed": -13
+    }
+  ],
+  "scaling": {
+    "S_vs_A_slope": 0.12520816939110344,
+    "S_vs_A_intercept": -879.3497601572033,
+    "R_squared": 0.8820804978046948
+  }
+}
