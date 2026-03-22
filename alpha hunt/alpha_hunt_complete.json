@@ -1,0 +1,43 @@
+{
+  "approach_1_phase_filter": {
+    "method": "\u0393-filtered phase flux ratio, squared",
+    "formula": "\u03b1 = [\u222b \u0393(r)\u00b7A(r) dr / \u222b A(r) dr]\u00b2",
+    "tb0_for_alpha_137": 2.437155,
+    "physical_meaning": "Fraction of topological phase charge surviving \u0393 screening"
+  },
+  "approach_5_self_energy": {
+    "method": "Screened/bare Coulomb self-energy ratio",
+    "formula": "\u03b1 = \u222b \u0393\u00b2\u00b7A\u00b2/r dr / \u222b A\u00b2/r dr",
+    "tb0_for_alpha_137": 2.895146,
+    "physical_meaning": "Renormalized vs bare EM self-energy (QED analog)",
+    "Gamma_vac_at_crossing": 0.06591019,
+    "vacuum_runs_at_pct": 6.59
+  },
+  "combined_constraints": {
+    "Emc2_condition": "\u03bc\u2074/(2\u03bb) = c\u2080\u00b2",
+    "alpha_condition": "\u03c4\u03b2\u2080 = 2.8951",
+    "remaining_free_params": 1,
+    "free_param": "\u03bc\u00b2 (or equivalently \u03c4 or \u03bb)",
+    "relation": "\u03c4 = 2.8951 \u00b7 \u03bc\u00b2"
+  },
+  "simulation_check": {
+    "mu2": 1.4,
+    "lambda": 0.55,
+    "tau": 5.0,
+    "tb0_actual": 6.3636,
+    "alpha_actual": 0.00080223,
+    "inv_alpha_actual": 1246.53,
+    "tau_needed_for_137": 2.2748
+  },
+  "honest_verdict": {
+    "achievable": true,
+    "predicted": false,
+    "missing": "A third self-consistency condition to fix the last free parameter",
+    "candidates": [
+      "Cosmological noise amplitude self-consistency",
+      "Vortex lattice stability threshold",
+      "3+1D topological constraint",
+      "Mass spectrum quantization"
+    ]
+  }
+}
