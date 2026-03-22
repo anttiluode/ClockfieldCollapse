@@ -83,3 +83,11 @@ Pathologies such as schizophrenia (Geometric Dysrhythmia) are physically isomorp
 The convergence of astrophysical collapse, machine learning attention, and neurobiological rhythms is not a panpsychic coincidence. Brains are not literal black holes, and the universe is not a literal neural network. Rather, complex wave interference on a modulated metric manifold is simply the most optimal, mathematically inescapable method for computing, storing, and retrieving information in a continuous universe.
 
 Gravity ($\Gamma$) is the universe's native attention mechanism. It selectively freezes structures to store them, and establishes sharp gradients ($|\nabla\Gamma|$) so they can be queried. The universe does not compute with bits; it computes by folding time around phase.
+
+## Sources
+
+https://github.com/anttiluode/One_formula_three_domains
+
+https://github.com/anttiluode/ClockfieldCollapse
+
+This is high speculation. 
