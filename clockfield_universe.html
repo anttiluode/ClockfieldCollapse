@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clockfield Universe — It from Phase</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #06080c;
+  --panel: rgba(8,12,20,0.92);
+  --border: rgba(80,140,255,0.12);
+  --accent: #4da6ff;
+  --accent2: #ff6b4a;
+  --accent3: #7cff6b;
+  --text: #c8d8e8;
+  --dim: #5a6a7a;
+  --glow: rgba(77,166,255,0.15);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  cursor: crosshair;
+}
+
+canvas#main { 
+  position: fixed; 
+  top: 0; left: 0; 
+  width: 100vw; 
+  height: 100vh; 
+  z-index: 0; 
+}
+
+.overlay {
+  position: fixed;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.overlay > * { pointer-events: auto; }
+
+/* Title */
+.title-bar {
+  top: 16px; left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  animation: fadeDown 1.2s ease-out;
+}
+
+.title-bar h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  color: #fff;
+  text-shadow: 0 0 40px rgba(77,166,255,0.3);
+}
+
+.title-bar .subtitle {
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Left panel */
+.panel-left {
+  top: 70px; left: 16px;
+  width: 260px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  backdrop-filter: blur(12px);
+  animation: fadeIn 0.8s ease-out;
+}
+
+.panel-title {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+  opacity: 0.8;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 3px 0;
+  font-size: 11px;
+}
+
+.stat-label { color: var(--dim); font-size: 10px; }
+.stat-value { 
+  color: #fff; 
+  font-weight: 500; 
+  font-variant-numeric: tabular-nums;
+}
+.stat-value.hot { color: var(--accent2); }
+.stat-value.cool { color: var(--accent); }
+.stat-value.green { color: var(--accent3); }
+
+/* Controls */
+.ctrl-group { margin-bottom: 8px; }
+.ctrl-group label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--dim);
+  margin-bottom: 3px;
+}
+.ctrl-group label span { color: var(--text); }
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(77,166,255,0.4);
+}
+
+/* Buttons */
+.btn-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+button {
+  background: rgba(77,166,255,0.08);
+  border: 1px solid rgba(77,166,255,0.25);
+  color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+button:hover {
+  background: rgba(77,166,255,0.18);
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--glow);
+}
+button.danger {
+  border-color: rgba(255,107,74,0.25);
+  color: var(--accent2);
+  background: rgba(255,107,74,0.06);
+}
+button.danger:hover {
+  background: rgba(255,107,74,0.15);
+  border-color: var(--accent2);
+}
+
+/* Right panel */
+.panel-right {
+  top: 70px; right: 16px;
+  width: 220px;
+}
+
+/* Bottom bar */
+.bottom-bar {
+  bottom: 16px; left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.equation {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  text-shadow: 0 0 20px rgba(77,166,255,0.2);
+  letter-spacing: 1px;
+}
+
+.bottom-hint {
+  font-size: 9px;
+  color: var(--dim);
+  margin-top: 6px;
+  letter-spacing: 2px;
+}
+
+/* Phase ring */
+.phase-ring {
+  width: 100px; height: 100px;
+  margin: 6px auto;
+  position: relative;
+}
+.phase-ring canvas { width: 100%; height: 100%; }
+
+/* Entropy bar */
+.entropy-bar-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.entropy-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.3s;
+  width: 0%;
+}
+
+/* Vortex count pills */
+.vortex-pills {
+  display: flex; gap: 3px; flex-wrap: wrap; margin-top: 6px;
+}
+.pill {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+}
+.pill.pos { background: var(--accent); }
+.pill.neg { background: var(--accent2); }
+.pill.frozen { 
+  background: rgba(255,255,255,0.7);
+  box-shadow: 0 0 4px rgba(255,255,255,0.5);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeDown {
+  from { opacity: 0; transform: translate(-50%, -12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .panel-left, .panel-right { display: none; }
+  .title-bar h1 { font-size: 16px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="main"></canvas>
+
+<!-- Title -->
+<div class="overlay title-bar">
+  <h1>CLOCKFIELD UNIVERSE</h1>
+  <div class="subtitle">Γ(x) = 1/(1 + τ·|φ|²)² — It from Phase</div>
+</div>
+
+<!-- Left Panel: Controls -->
+<div class="overlay panel-left">
+  <div class="panel" style="animation-delay:0.1s">
+    <div class="panel-title">Field Parameters</div>
+    <div class="ctrl-group">
+      <label>τ coupling <span id="tau-val">5.0</span></label>
+      <input type="range" id="tau" min="0.5" max="20" step="0.5" value="5">
+    </div>
+    <div class="ctrl-group">
+      <label>μ² potential <span id="mu-val">1.40</span></label>
+      <input type="range" id="mu2" min="0.5" max="3" step="0.1" value="1.4">
+    </div>
+    <div class="ctrl-group">
+      <label>Noise (TADS) <span id="noise-val">0.03</span></label>
+      <input type="range" id="noise" min="0" max="0.15" step="0.005" value="0.03">
+    </div>
+    <div class="ctrl-group">
+      <label>Damping <span id="damp-val">0.003</span></label>
+      <input type="range" id="damping" min="0" max="0.02" step="0.001" value="0.003">
+    </div>
+  </div>
+
+  <div class="panel" style="animation-delay:0.2s">
+    <div class="panel-title">Inject</div>
+    <div class="ctrl-group">
+      <label>Boost velocity <span id="boost-val">0.5</span></label>
+      <input type="range" id="boost" min="0" max="3" step="0.1" value="0.5">
+    </div>
+    <div class="btn-row">
+      <button onclick="injectVortexPair()">+/− Pair</button>
+      <button onclick="injectVortexRing()">Ring</button>
+      <button onclick="injectPulse()">Pulse</button>
+    </div>
+    <div class="btn-row">
+      <button onclick="bigBang()">Big Bang</button>
+      <button class="danger" onclick="resetField()">Reset</button>
+    </div>
+  </div>
+
+  <div class="panel" style="animation-delay:0.3s">
+    <div class="panel-title">Visualization</div>
+    <div class="ctrl-group">
+      <label>Color mode <span id="viz-val">Γ Metric</span></label>
+      <input type="range" id="vizMode" min="0" max="3" step="1" value="0">
+    </div>
+    <div class="ctrl-group">
+      <label>Γ threshold <span id="thresh-val">0.50</span></label>
+      <input type="range" id="threshold" min="0.01" max="0.99" step="0.01" value="0.5">
+    </div>
+    <div class="btn-row">
+      <button onclick="togglePause()" id="pauseBtn">Pause</button>
+      <button onclick="toggleSlowMo()">Slow-Mo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Right Panel: Readouts -->
+<div class="overlay panel-right">
+  <div class="panel" style="animation-delay:0.15s">
+    <div class="panel-title">Field State</div>
+    <div class="stat-row"><span class="stat-label">β_max</span><span class="stat-value hot" id="s-beta">0.00</span></div>
+    <div class="stat-row"><span class="stat-label">Γ_min</span><span class="stat-value cool" id="s-gamma">1.00</span></div>
+    <div class="stat-row"><span class="stat-label">Frozen %</span><span class="stat-value" id="s-frozen">0.0%</span></div>
+    <div class="stat-row"><span class="stat-label">Energy</span><span class="stat-value" id="s-energy">0.00</span></div>
+    <div class="stat-row"><span class="stat-label">Mass (ΔM)</span><span class="stat-value green" id="s-mass">0.00</span></div>
+    <div class="stat-row"><span class="stat-label">Ξ_max</span><span class="stat-value" id="s-xi">0.00</span></div>
+  </div>
+
+  <div class="panel" style="animation-delay:0.25s">
+    <div class="panel-title">Topology</div>
+    <div class="stat-row"><span class="stat-label">Vortices</span><span class="stat-value" id="s-vortex">0</span></div>
+    <div class="vortex-pills" id="vortex-pills"></div>
+    <div class="stat-row" style="margin-top:6px"><span class="stat-label">Step</span><span class="stat-value" id="s-step">0</span></div>
+    <div class="stat-row"><span class="stat-label">FPS</span><span class="stat-value" id="s-fps">0</span></div>
+  </div>
+
+  <div class="panel" style="animation-delay:0.35s">
+    <div class="panel-title">Entropy Estimate</div>
+    <div class="stat-row"><span class="stat-label">S_area</span><span class="stat-value cool" id="s-sarea">0</span></div>
+    <div class="stat-row"><span class="stat-label">S_topo</span><span class="stat-value hot" id="s-stopo">0</span></div>
+    <div class="stat-row"><span class="stat-label">S_total</span><span class="stat-value green" id="s-stotal">0</span></div>
+    <div class="entropy-bar-container">
+      <div class="entropy-bar" id="entropy-bar"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="animation-delay:0.45s">
+    <div class="panel-title">Phase Distribution</div>
+    <div class="phase-ring"><canvas id="phaseCanvas" width="100" height="100"></canvas></div>
+  </div>
+</div>
+
+<!-- Bottom -->
+<div class="overlay bottom-bar">
+  <div class="equation">S = (A/ξ²)·ln(2m) + (3g−3)·ln(A/(gξ²))</div>
+  <div class="bottom-hint">CLICK TO INJECT VORTEX · SCROLL TO ZOOM · DRAG TO ROTATE</div>
+</div>
+
+<script>
+// ============================================================
+// CLOCKFIELD UNIVERSE — 2D GPU-ACCELERATED SIMULATION
+// The Clockfield PDE on a 2D grid rendered as a living cosmos
+// ============================================================
+
+const canvas = document.getElementById('main');
+const gl = canvas.getContext('webgl2', { antialias: false, alpha: false });
+if (!gl) { alert('WebGL2 required'); throw 'No WebGL2'; }
+
+// --- Simulation grid ---
+const N = 512;
+let tau = 5.0, mu2 = 1.4, lam = 0.55, c02 = 1.0, dt = 0.012;
+let noiseAmp = 0.03, damping = 0.003;
+let paused = false, slowMo = false;
+let simStep = 0;
+let vizMode = 0;
+let gammaThreshold = 0.5;
+let boost = 0.5;
+
+const phi_eq = Math.sqrt(mu2 / lam);
+const beta_eq = mu2 / lam;
+
+// Field arrays: u, v (real/imag of φ), u_prev, v_prev
+let u = new Float32Array(N * N);
+let v = new Float32Array(N * N);
+let u_prev = new Float32Array(N * N);
+let v_prev = new Float32Array(N * N);
+
+// Initialize to vacuum
+function initVacuum() {
+  const peq = Math.sqrt(mu2 / lam);
+  for (let i = 0; i < N * N; i++) {
+    const angle = Math.random() * 0.001; // Nearly uniform phase
+    u[i] = peq * Math.cos(angle);
+    v[i] = peq * Math.sin(angle);
+    u_prev[i] = u[i];
+    v_prev[i] = v[i];
+  }
+}
+initVacuum();
+
+// Vortex tracking
+let vortices = [];
+let nextVortexId = 0;
+
+function idx(x, y) {
+  return ((y + N) % N) * N + ((x + N) % N);
+}
+
+// --- PDE step (CPU, optimized) ---
+function stepPDE() {
+  const peq = Math.sqrt(mu2 / lam);
+  const dx2 = 1.0;
+  const dt2 = dt * dt;
+  
+  const u_new = new Float32Array(N * N);
+  const v_new = new Float32Array(N * N);
+  
+  let betaMax = 0, gammaMin = 1, frozenCount = 0;
+  let totalEnergy = 0, totalMass = 0;
+  
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
+      const i = y * N + x;
+      
+      // Neighbors (periodic)
+      const iL = y * N + ((x - 1 + N) % N);
+      const iR = y * N + ((x + 1) % N);
+      const iU = ((y - 1 + N) % N) * N + x;
+      const iD = ((y + 1) % N) * N + x;
+      
+      const beta = u[i] * u[i] + v[i] * v[i];
+      const tb = tau * beta;
+      const g = 1.0 / ((1.0 + tb) * (1.0 + tb));
+      const g2 = g * g;
+      const ce = c02 / (1.0 + tb);
+      
+      // Laplacian
+      const lapU = (u[iL] + u[iR] + u[iU] + u[iD] - 4.0 * u[i]) / dx2;
+      const lapV = (v[iL] + v[iR] + v[iU] + v[iD] - 4.0 * v[i]) / dx2;
+      
+      // Force
+      const fU = ce * lapU + mu2 * u[i] - lam * beta * u[i];
+      const fV = ce * lapV + mu2 * v[i] - lam * beta * v[i];
+      
+      // Noise (TADS)
+      const nU = noiseAmp * (Math.random() - 0.5) * 2;
+      const nV = noiseAmp * (Math.random() - 0.5) * 2;
+      
+      // Verlet integration
+      u_new[i] = 2 * u[i] - u_prev[i] + g2 * fU * dt2 - damping * (u[i] - u_prev[i]) + nU * dt;
+      v_new[i] = 2 * v[i] - v_prev[i] + g2 * fV * dt2 - damping * (v[i] - v_prev[i]) + nV * dt;
+      
+      // Stats
+      if (beta > betaMax) betaMax = beta;
+      if (g < gammaMin) gammaMin = g;
+      if (g < 0.01) frozenCount++;
+      totalEnergy += 0.5 * ce * (lapU * lapU + lapV * lapV) + 0.5 * beta;
+      totalMass += (1.0 - g);
+    }
+  }
+  
+  u_prev.set(u);
+  v_prev.set(v);
+  u.set(u_new);
+  v.set(v_new);
+  
+  return { betaMax, gammaMin, frozenCount, totalEnergy, totalMass };
+}
+
+// --- Vortex injection ---
+function addVortex(cx, cy, charge, velX, velY) {
+  const peq = Math.sqrt(mu2 / lam);
+  const coreR = 8;
+  vortices.push({ x: cx, y: cy, charge, id: nextVortexId++, frozen: false });
+  
+  for (let dy = -coreR * 3; dy <= coreR * 3; dy++) {
+    for (let dx = -coreR * 3; dx <= coreR * 3; dx++) {
+      const px = (cx + dx + N) % N;
+      const py = (cy + dy + N) % N;
+      const r = Math.sqrt(dx * dx + dy * dy);
+      const theta = Math.atan2(dy, dx) * charge;
+      const amp = peq * Math.tanh(r / coreR);
+      const i = py * N + px;
+      
+      // Blend with existing field
+      const blend = Math.exp(-r * r / (coreR * coreR * 4));
+      u[i] = u[i] * (1 - blend) + amp * Math.cos(theta) * blend;
+      v[i] = v[i] * (1 - blend) + amp * Math.sin(theta) * blend;
+      
+      // Apply velocity as phase gradient
+      u_prev[i] = u[i] - velX * dt * blend;
+      v_prev[i] = v[i] - velY * dt * blend;
+    }
+  }
+}
+
+function injectVortexPair() {
+  const cx = N / 2, cy = N / 2;
+  const sep = 30;
+  const b = boost * 20;
+  addVortex(cx - sep, cy, +1, b, 0);
+  addVortex(cx + sep, cy, -1, -b, 0);
+}
+
+function injectVortexRing() {
+  const cx = N / 2, cy = N / 2;
+  const r = 40;
+  const nv = 6;
+  const b = boost * 15;
+  for (let i = 0; i < nv; i++) {
+    const angle = (2 * Math.PI * i) / nv;
+    const px = cx + r * Math.cos(angle);
+    const py = cy + r * Math.sin(angle);
+    const charge = (i % 2 === 0) ? 1 : -1;
+    addVortex(Math.round(px), Math.round(py), charge, -b * Math.cos(angle), -b * Math.sin(angle));
+  }
+}
+
+function injectPulse() {
+  const peq = Math.sqrt(mu2 / lam);
+  const cx = N / 2, cy = N / 2;
+  const sigma = 20;
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
+      const dx = x - cx, dy = y - cy;
+      const r2 = dx * dx + dy * dy;
+      const amp = 3.0 * peq * Math.exp(-r2 / (2 * sigma * sigma));
+      const i = y * N + x;
+      u[i] += amp;
+    }
+  }
+}
+
+function bigBang() {
+  // Start from the top of the Mexican hat (φ ≈ 0) with noise
+  for (let i = 0; i < N * N; i++) {
+    u[i] = 0.01 * (Math.random() - 0.5);
+    v[i] = 0.01 * (Math.random() - 0.5);
+    u_prev[i] = u[i];
+    v_prev[i] = v[i];
+  }
+  vortices = [];
+  simStep = 0;
+}
+
+function resetField() {
+  initVacuum();
+  vortices = [];
+  simStep = 0;
+}
+
+// --- Click to inject ---
+let mouseX = 0, mouseY = 0;
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const fx = (e.clientX - rect.left) / rect.width;
+  const fy = (e.clientY - rect.top) / rect.height;
+  const gx = Math.floor(fx * N);
+  const gy = Math.floor(fy * N);
+  const charge = e.shiftKey ? -1 : 1;
+  addVortex(gx, gy, charge, 0, 0);
+});
+
+// --- WebGL rendering ---
+function createShader(type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(s));
+  }
+  return s;
+}
+
+function createProgram(vs, fs) {
+  const p = gl.createProgram();
+  gl.attachShader(p, createShader(gl.VERTEX_SHADER, vs));
+  gl.attachShader(p, createShader(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(p);
+  return p;
+}
+
+const vsQuad = `#version 300 es
+in vec2 a_pos;
+out vec2 v_uv;
+void main() {
+  v_uv = a_pos * 0.5 + 0.5;
+  gl_Position = vec4(a_pos, 0, 1);
+}`;
+
+const fsRender = `#version 300 es
+precision highp float;
+in vec2 v_uv;
+out vec4 fragColor;
+
+uniform sampler2D u_field; // RG = u,v
+uniform float u_tau;
+uniform float u_mu2;
+uniform float u_lam;
+uniform int u_vizMode;
+uniform float u_threshold;
+uniform float u_time;
+
+// Smooth HSV->RGB
+vec3 hsv2rgb(float h, float s, float v) {
+  vec3 c = vec3(h, s, v);
+  vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0,4,2),6.0)-3.0)-1.0, 0.0, 1.0);
+  return c.z * mix(vec3(1), rgb, c.y);
+}
+
+void main() {
+  vec4 field = texture(u_field, v_uv);
+  float u = field.r;
+  float v = field.g;
+  float beta = u*u + v*v;
+  float tb = u_tau * beta;
+  float gamma = 1.0 / ((1.0+tb)*(1.0+tb));
+  float phase = atan(v, u);
+  float amp = sqrt(beta);
+  float phi_eq = sqrt(u_mu2 / u_lam);
+  
+  vec3 color;
+  
+  if (u_vizMode == 0) {
+    // Γ metric mode — frozen time visualization
+    float g = gamma;
+    // Deep frozen = bright white/blue core, flowing = dark cosmos
+    vec3 frozen = vec3(0.85, 0.92, 1.0); // icy white-blue
+    vec3 shell = vec3(0.3, 0.5, 1.0);     // blue shell
+    vec3 vacuum = vec3(0.02, 0.03, 0.06); // deep space
+    vec3 hot = vec3(1.0, 0.4, 0.2);       // Hawking radiation orange
+    
+    if (g < 0.001) {
+      // Deep frozen — singularity
+      float intensity = 1.0 - g * 1000.0;
+      color = mix(shell, frozen, intensity);
+      // Subtle phase coloring inside
+      color += 0.1 * hsv2rgb((phase / 6.283 + 0.5), 0.5, 0.3);
+    } else if (g < u_threshold) {
+      // Γ-shell boundary — Hawking radiation zone
+      float t = (g - 0.001) / (u_threshold - 0.001);
+      float gradient = abs(dFdx(g)) + abs(dFdy(g));
+      color = mix(shell, vacuum, t);
+      // Hawking glow at steep gradients
+      color += hot * gradient * 200.0 * (1.0 - t);
+      // Phase encoding visible
+      color += 0.15 * hsv2rgb((phase / 6.283 + 0.5), 0.7, 0.4) * (1.0 - t);
+    } else {
+      // Vacuum — show subtle wave ripples
+      float deviation = abs(amp - phi_eq) / phi_eq;
+      color = vacuum + vec3(0.03, 0.06, 0.12) * deviation * 5.0;
+      // Very subtle phase
+      color += 0.02 * hsv2rgb((phase / 6.283 + 0.5), 0.3, 0.2);
+    }
+    
+    // Vortex core glow
+    if (beta < 0.5) {
+      color += vec3(0.5, 0.7, 1.0) * (1.0 - beta * 2.0) * 0.3;
+    }
+    
+  } else if (u_vizMode == 1) {
+    // Phase mode — full color wheel
+    float hue = (phase / 6.283) + 0.5;
+    float sat = clamp(amp / (phi_eq * 1.5), 0.0, 1.0);
+    float val = clamp(0.15 + sat * 0.85, 0.0, 1.0);
+    // Dim frozen regions slightly
+    val *= mix(0.4, 1.0, clamp(gamma * 10.0, 0.0, 1.0));
+    color = hsv2rgb(hue, sat * 0.9, val);
+    
+  } else if (u_vizMode == 2) {
+    // Energy density mode
+    float energy = beta / (phi_eq * phi_eq * 4.0);
+    energy = clamp(energy, 0.0, 1.0);
+    // Blackbody-ish colormap
+    color = vec3(
+      clamp(energy * 3.0, 0.0, 1.0),
+      clamp(energy * 3.0 - 1.0, 0.0, 1.0),
+      clamp(energy * 3.0 - 2.0, 0.0, 1.0)
+    );
+    color *= color; // Gamma for drama
+    // Add cool background
+    color += vec3(0.01, 0.02, 0.04);
+    
+  } else {
+    // Ξ criticality mode
+    float xi = tb / pow(max(1.0 + u_tau * u_mu2/u_lam, 1.0), 0.2);
+    // Sub-critical = blue, critical = white, super-critical = red
+    if (xi < 0.8) {
+      color = vec3(0.05, 0.1, 0.3) * (xi / 0.8);
+    } else if (xi < 1.2) {
+      float t = (xi - 0.8) / 0.4;
+      color = mix(vec3(0.1, 0.2, 0.6), vec3(1.0, 1.0, 1.0), t);
+    } else {
+      float t = clamp((xi - 1.2) / 2.0, 0.0, 1.0);
+      color = mix(vec3(1.0, 1.0, 1.0), vec3(1.0, 0.2, 0.05), t);
+    }
+  }
+  
+  // Subtle vignette
+  vec2 vc = v_uv - 0.5;
+  float vign = 1.0 - dot(vc, vc) * 0.8;
+  color *= vign;
+  
+  // Subtle scanlines
+  color *= 0.97 + 0.03 * sin(v_uv.y * float(textureSize(u_field, 0).y) * 3.14159);
+  
+  fragColor = vec4(color, 1.0);
+}`;
+
+const prog = createProgram(vsQuad, fsRender);
+const a_pos = gl.getAttribLocation(prog, 'a_pos');
+const u_field = gl.getUniformLocation(prog, 'u_field');
+const u_tau = gl.getUniformLocation(prog, 'u_tau');
+const u_mu2 = gl.getUniformLocation(prog, 'u_mu2');
+const u_lam = gl.getUniformLocation(prog, 'u_lam');
+const u_vizMode = gl.getUniformLocation(prog, 'u_vizMode');
+const u_threshold = gl.getUniformLocation(prog, 'u_threshold');
+const u_time = gl.getUniformLocation(prog, 'u_time');
+
+// Fullscreen quad
+const quadBuf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+
+// Field texture
+const fieldTex = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D, fieldTex);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+
+function uploadField() {
+  const data = new Float32Array(N * N * 2);
+  for (let i = 0; i < N * N; i++) {
+    data[i * 2] = u[i];
+    data[i * 2 + 1] = v[i];
+  }
+  gl.bindTexture(gl.TEXTURE_2D, fieldTex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, N, N, 0, gl.RG, gl.FLOAT, data);
+}
+
+function render() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  
+  uploadField();
+  
+  gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
+  gl.enableVertexAttribArray(a_pos);
+  gl.vertexAttribPointer(a_pos, 2, gl.FLOAT, false, 0, 0);
+  
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, fieldTex);
+  gl.uniform1i(u_field, 0);
+  gl.uniform1f(u_tau, tau);
+  gl.uniform1f(u_mu2, mu2);
+  gl.uniform1f(u_lam, lam);
+  gl.uniform1i(u_vizMode, vizMode);
+  gl.uniform1f(u_threshold, gammaThreshold);
+  gl.uniform1f(u_time, performance.now() * 0.001);
+  
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+
+// --- UI bindings ---
+const vizNames = ['Γ Metric', 'Phase', 'Energy', 'Ξ Critical'];
+
+document.getElementById('tau').oninput = function() { 
+  tau = parseFloat(this.value); 
+  document.getElementById('tau-val').textContent = tau.toFixed(1); 
+};
+document.getElementById('mu2').oninput = function() { 
+  mu2 = parseFloat(this.value); 
+  document.getElementById('mu-val').textContent = mu2.toFixed(2); 
+};
+document.getElementById('noise').oninput = function() { 
+  noiseAmp = parseFloat(this.value); 
+  document.getElementById('noise-val').textContent = noiseAmp.toFixed(3); 
+};
+document.getElementById('damping').oninput = function() { 
+  damping = parseFloat(this.value); 
+  document.getElementById('damp-val').textContent = damping.toFixed(3); 
+};
+document.getElementById('boost').oninput = function() { 
+  boost = parseFloat(this.value); 
+  document.getElementById('boost-val').textContent = boost.toFixed(1); 
+};
+document.getElementById('vizMode').oninput = function() { 
+  vizMode = parseInt(this.value); 
+  document.getElementById('viz-val').textContent = vizNames[vizMode]; 
+};
+document.getElementById('threshold').oninput = function() { 
+  gammaThreshold = parseFloat(this.value); 
+  document.getElementById('thresh-val').textContent = gammaThreshold.toFixed(2); 
+};
+
+function togglePause() { 
+  paused = !paused; 
+  document.getElementById('pauseBtn').textContent = paused ? 'Resume' : 'Pause';
+}
+function toggleSlowMo() { slowMo = !slowMo; }
+
+// --- Phase ring visualization ---
+const phaseCtx = document.getElementById('phaseCanvas').getContext('2d');
+function drawPhaseRing() {
+  const w = 100, h = 100, cx = 50, cy = 50, r = 38;
+  phaseCtx.clearRect(0, 0, w, h);
+  
+  // Sample phase histogram
+  const bins = 36;
+  const hist = new Float32Array(bins);
+  const step = Math.floor(N / 64);
+  for (let y = 0; y < N; y += step) {
+    for (let x = 0; x < N; x += step) {
+      const i = y * N + x;
+      const phase = Math.atan2(v[i], u[i]);
+      const bin = Math.floor(((phase / (2 * Math.PI)) + 0.5) * bins) % bins;
+      hist[bin] += u[i] * u[i] + v[i] * v[i];
+    }
+  }
+  
+  // Normalize
+  let maxH = 0.001;
+  for (let i = 0; i < bins; i++) if (hist[i] > maxH) maxH = hist[i];
+  
+  // Draw ring
+  for (let i = 0; i < bins; i++) {
+    const a0 = (i / bins) * 2 * Math.PI - Math.PI;
+    const a1 = ((i + 1) / bins) * 2 * Math.PI - Math.PI;
+    const intensity = hist[i] / maxH;
+    const ri = r * 0.5;
+    const ro = ri + (r - ri) * intensity;
+    
+    phaseCtx.beginPath();
+    phaseCtx.arc(cx, cy, ro, a0, a1);
+    phaseCtx.arc(cx, cy, ri, a1, a0, true);
+    phaseCtx.closePath();
+    
+    const hue = ((i / bins) * 360);
+    phaseCtx.fillStyle = `hsla(${hue}, 80%, 60%, 0.8)`;
+    phaseCtx.fill();
+  }
+  
+  // Center label
+  phaseCtx.fillStyle = 'rgba(200,216,232,0.5)';
+  phaseCtx.font = '8px JetBrains Mono';
+  phaseCtx.textAlign = 'center';
+  phaseCtx.fillText('θ', cx, cy + 3);
+}
+
+// --- Stats update ---
+function updateStats(stats) {
+  document.getElementById('s-beta').textContent = stats.betaMax.toExponential(2);
+  document.getElementById('s-gamma').textContent = stats.gammaMin.toExponential(2);
+  document.getElementById('s-frozen').textContent = (stats.frozenCount / (N * N) * 100).toFixed(1) + '%';
+  document.getElementById('s-energy').textContent = (stats.totalEnergy / (N * N)).toFixed(2);
+  document.getElementById('s-mass').textContent = (stats.totalMass).toExponential(2);
+  
+  const tb = tau * stats.betaMax;
+  const xi = tb / Math.pow(Math.max(1 + tau * beta_eq, 1), 0.2);
+  document.getElementById('s-xi').textContent = xi.toFixed(3);
+  document.getElementById('s-step').textContent = simStep;
+  
+  // Entropy estimate
+  const frozenArea = stats.frozenCount;
+  const estGenus = Math.max(0, Math.floor(vortices.length * 1.5));
+  const xi_core = 8;
+  const m = 330;
+  const s_area = frozenArea > 0 ? (frozenArea / (xi_core * xi_core)) * Math.log(2 * m) : 0;
+  const s_topo = estGenus >= 2 ? (3 * estGenus - 3) * Math.log(Math.max(1, frozenArea / (estGenus * xi_core * xi_core))) : 0;
+  const s_total = s_area + s_topo;
+  
+  document.getElementById('s-sarea').textContent = Math.floor(s_area);
+  document.getElementById('s-stopo').textContent = Math.floor(s_topo);
+  document.getElementById('s-stotal').textContent = Math.floor(s_total);
+  document.getElementById('entropy-bar').style.width = Math.min(100, (s_topo / Math.max(1, s_total)) * 100) + '%';
+  
+  // Vortex pills
+  const pills = document.getElementById('vortex-pills');
+  pills.innerHTML = '';
+  document.getElementById('s-vortex').textContent = vortices.length;
+  vortices.forEach(vx => {
+    const d = document.createElement('div');
+    d.className = 'pill ' + (vx.charge > 0 ? 'pos' : 'neg');
+    pills.appendChild(d);
+  });
+}
+
+// --- Main loop ---
+let lastTime = performance.now();
+let frameCount = 0;
+let fpsTime = 0;
+
+function loop() {
+  requestAnimationFrame(loop);
+  
+  const now = performance.now();
+  frameCount++;
+  if (now - fpsTime > 1000) {
+    document.getElementById('s-fps').textContent = frameCount;
+    frameCount = 0;
+    fpsTime = now;
+  }
+  
+  if (!paused) {
+    const stepsPerFrame = slowMo ? 1 : 3;
+    let stats;
+    for (let s = 0; s < stepsPerFrame; s++) {
+      stats = stepPDE();
+      simStep++;
+    }
+    if (stats) {
+      if (simStep % 6 === 0) updateStats(stats);
+      if (simStep % 30 === 0) drawPhaseRing();
+    }
+  }
+  
+  render();
+}
+
+// Enable float textures
+const ext = gl.getExtension('EXT_color_buffer_float');
+gl.getExtension('OES_texture_float_linear');
+
+loop();
+
+// --- Keyboard shortcuts ---
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ') { e.preventDefault(); togglePause(); }
+  if (e.key === 'v') injectVortexPair();
+  if (e.key === 'r') injectVortexRing();
+  if (e.key === 'p') injectPulse();
+  if (e.key === 'b') bigBang();
+  if (e.key === 'Escape') resetField();
+  if (e.key >= '1' && e.key <= '4') {
+    vizMode = parseInt(e.key) - 1;
+    document.getElementById('vizMode').value = vizMode;
+    document.getElementById('viz-val').textContent = vizNames[vizMode];
+  }
+});
+</script>
+</body>
+</html>
